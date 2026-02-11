@@ -488,6 +488,10 @@ body {
     line-height: 1;
 }
 
+.page { display: none; }
+.page.active { display: block; }
+
+
 .close:hover {
     color: var(--text-primary);
 }

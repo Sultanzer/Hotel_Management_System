@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeAuth();
   setupEventListeners();
   handleRouting();
+  window.addEventListener('hashchange', handleRouting);
 });
 
 function initializeAuth() {
@@ -46,9 +47,7 @@ function updateUIForAuth() {
 }
 
 function setupEventListeners() {
-  document.querySelectorAll('.nav-link').forEach(link => {
-    link.addEventListener('click', handleNavigation);
-  });
+
 
   const hamburger = document.getElementById('hamburger');
   const navMenu = document.getElementById('navMenu');
@@ -98,7 +97,7 @@ function navigateTo(page) {
 
     loadPageData(page);
 
-    window.history.pushState({}, '', `#${page}`);
+    window.location.hash = page;
   }
 
   document.getElementById('navMenu')?.classList.remove('active');
@@ -187,42 +186,42 @@ async function handleLogin(e) {
 }
 
 async function handleRegister(e) {
-    e.preventDefault();
-    
-    const username = document.getElementById('regUsername').value;
-    const email = document.getElementById('regEmail').value;
-    const password = document.getElementById('regPassword').value;
-    const firstName = document.getElementById('regFirstName').value;
-    const lastName = document.getElementById('regLastName').value;
-    const phoneNumber = document.getElementById('regPhone').value;
-    const adminCode = document.getElementById('regAdminCode')?.value;
-    
-    try {
-        const data = await apiRequest('/auth/register', {
-            method: 'POST',
-            body: JSON.stringify({
-                username,
-                email,
-                password,
-                firstName,
-                lastName,
-                phoneNumber,
-                ...(adminCode ? { adminCode } : {})
-            })
-        });
-        
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data));
-        currentUser = data.data;
-        
-        showToast('Registration successful!', 'success');
-        updateUIForAuth();
-        navigateTo('home');
-        
-        e.target.reset();
-    } catch (error) {
-        showToast(error.message, 'error');
-    }
+  e.preventDefault();
+
+  const username = document.getElementById('regUsername').value;
+  const email = document.getElementById('regEmail').value;
+  const password = document.getElementById('regPassword').value;
+  const firstName = document.getElementById('regFirstName').value;
+  const lastName = document.getElementById('regLastName').value;
+  const phoneNumber = document.getElementById('regPhone').value;
+  const adminCode = document.getElementById('regAdminCode')?.value;
+
+  try {
+    const data = await apiRequest('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({
+        username,
+        email,
+        password,
+        firstName,
+        lastName,
+        phoneNumber,
+        ...(adminCode ? { adminCode } : {})
+      })
+    });
+
+    localStorage.setItem('token', data.data.token);
+    localStorage.setItem('user', JSON.stringify(data.data));
+    currentUser = data.data;
+
+    showToast('Registration successful!', 'success');
+    updateUIForAuth();
+    navigateTo('home');
+
+    e.target.reset();
+  } catch (error) {
+    showToast(error.message, 'error');
+  }
 }
 
 function handleLogout() {
@@ -329,12 +328,11 @@ function displayRooms(roomsToDisplay) {
           ${room.description ? `<p>${room.description}</p>` : ''}
         </div>
         <div class="room-price">$${room.price}/night</div>
-        ${
-          currentUser
-            ? `<button class="btn btn-primary btn-block" onclick="openBookingModal('${room._id}', ${room.price}, ${room.capacity})">
+        ${currentUser
+          ? `<button class="btn btn-primary btn-block" onclick="openBookingModal('${room._id}', ${room.price}, ${room.capacity})">
                  Book Now
                </button>`
-            : `<button class="btn btn-secondary btn-block" onclick="navigateTo('login')">
+          : `<button class="btn btn-secondary btn-block" onclick="navigateTo('login')">
                  Login to Book
                </button>`
         }
@@ -566,8 +564,8 @@ async function loadAdminRooms() {
           </thead>
           <tbody>
             ${data.data
-              .map(
-                room => `
+        .map(
+          room => `
               <tr>
                 <td>${room.roomNumber}</td>
                 <td>${room.type}</td>
@@ -579,8 +577,8 @@ async function loadAdminRooms() {
                 </td>
               </tr>
             `
-              )
-              .join('')}
+        )
+        .join('')}
           </tbody>
         </table>
       </div>
@@ -613,8 +611,8 @@ async function loadAdminBookings() {
           </thead>
           <tbody>
             ${data.data
-              .map(
-                booking => `
+        .map(
+          booking => `
               <tr>
                 <td>${booking.guestName}</td>
                 <td>${booking.room?.roomNumber || 'N/A'}</td>
@@ -627,8 +625,8 @@ async function loadAdminBookings() {
                 </td>
               </tr>
             `
-              )
-              .join('')}
+        )
+        .join('')}
           </tbody>
         </table>
       </div>
@@ -659,8 +657,8 @@ async function loadAdminUsers() {
           </thead>
           <tbody>
             ${data.data
-              .map(
-                user => `
+        .map(
+          user => `
               <tr>
                 <td>${user.username}</td>
                 <td>${user.email}</td>
@@ -668,13 +666,13 @@ async function loadAdminUsers() {
                 <td>${new Date(user.createdAt).toLocaleDateString()}</td>
                 <td>
                   ${user._id !== currentUser.id
-                    ? `<button class="btn btn-danger" onclick="deleteUser('${user._id}')">Delete</button>`
-                    : '<em>Current user</em>'}
+              ? `<button class="btn btn-danger" onclick="deleteUser('${user._id}')">Delete</button>`
+              : '<em>Current user</em>'}
                 </td>
               </tr>
             `
-              )
-              .join('')}
+        )
+        .join('')}
           </tbody>
         </table>
       </div>
